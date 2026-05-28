@@ -14,10 +14,11 @@ type servicesDetailsContainer struct {
 }
 
 type Service struct {
-	ID               string `json:"id"`
-	Project          string `json:"project"`
-	NetworkID        string `json:"network_id"`
-	HighAvailability bool   `json:"high_availability"`
+	ID                string `json:"id"`
+	Project           string `json:"project"`
+	NetworkID         string `json:"network_id"`
+	HighAvailability  bool   `json:"high_availability"`
+	IsRecursorEnabled bool   `json:"is_recursor_enabled"`
 }
 
 type ServiceDetails struct {
@@ -26,7 +27,13 @@ type ServiceDetails struct {
 }
 
 type ServiceCreateDTO struct {
-	NetworkID string `json:"network_id"`
+	NetworkID         string `json:"network_id"`
+	IsRecursorEnabled *bool  `json:"is_recursor_enabled"`
+}
+
+type ServiceUpdateDTO struct {
+	ServiceID         string `json:"-"`
+	IsRecursorEnabled *bool  `json:"is_recursor_enabled"`
 }
 
 type ServiceAddress struct {
@@ -54,6 +61,15 @@ func (client *PrivateDNSClient) GetService(ctx context.Context, serviceID string
 	service := &servicesDetailsContainer{}
 
 	return service.Service, client.doRequest(req, http.StatusOK, service)
+}
+
+func (client *PrivateDNSClient) UpdateService(ctx context.Context, dto *ServiceUpdateDTO) error {
+	req, err := client.makeRequest(ctx, http.MethodPut, "/services/"+dto.ServiceID, dto, nil)
+	if err != nil {
+		return err
+	}
+
+	return client.doRequest(req, http.StatusNoContent, nil)
 }
 
 func (client *PrivateDNSClient) CreateService(ctx context.Context, serviceDTO *ServiceCreateDTO) (*ServiceDetails, error) {
